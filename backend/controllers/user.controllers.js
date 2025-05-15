@@ -137,8 +137,6 @@ export const logout = async (req, res) => {
 
 
 export const checkAuth = async (req, res) => {
-
-
     try {
 
         if (!req.user) {
@@ -164,3 +162,45 @@ export const checkAuth = async (req, res) => {
     }
 }
 
+
+const profileSchema = z.object({
+    id: z.string("Id is required"),
+    collegeName: z.string().min(1, "College Name is Required"),
+    collegeDegree: z.string().min(1, "College Degree is Required"),
+    graduation: z.boolean("graudion is required")
+})
+
+
+
+export const userProfileUpdate = async (req, res) => {
+
+
+    try {
+        const result = profileSchema.safeParse(req.body)
+
+        if (!result.success) {
+            const errors = result.error.errors.map((e) => e.message)
+            return res.status(400).json({ success: false, message: "validation failed", errors })
+        }
+
+        const { id, collegeName, collegeDegree, graduation } = result.data
+
+        const user = await USER.findOne({ _id: id })
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: "user not exits" })
+        }
+
+        user.collegeName = collegeName
+        user.collegeDegree = collegeDegree
+        user.graduation = graduation
+
+        await user.save()
+        return res.status(200).json({ success: true, message: "" })
+
+    } catch (error) {
+        console.log("error while updating profile", error.message)
+        return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message })
+    }
+
+}
