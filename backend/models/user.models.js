@@ -1,5 +1,4 @@
 import mongoose  from "mongoose";
-import { boolean } from "zod";
 
 const userSchema = new mongoose.Schema({
     name : {
@@ -12,7 +11,7 @@ const userSchema = new mongoose.Schema({
         unique : true
     },
     password : {
-        type : string,
+        type : String,
         required : true,
     },
     roles : {
@@ -27,11 +26,11 @@ const userSchema = new mongoose.Schema({
         type : String
     },
     graduation : {
-        type : boolean,
+        type : Boolean,
     }
 })
 
 
-const USER = mongoose.model("users",userSchema)
+const USER =  mongoose.model("users",userSchema)
 
 export default USER
