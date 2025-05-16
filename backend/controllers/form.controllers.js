@@ -2,6 +2,9 @@ import puppeteer from 'puppeteer';
 import { z } from 'zod';
 import { generateAnswers } from '../services/generateAnswers.js';
 import FORM from '../models/form.models.js';
+import { autoFillFunction } from '../services/autoFillFunction.js';
+
+
 // Define schema
 const urlSchema = z.object({
     url: z.string().url("Invalid URL").min(1, "URL is required"),
@@ -81,15 +84,18 @@ export const extractQuestions = async (req, res) => {
         });
 
         await browser.close();
-        const questionsWithAnswers =  await generateAnswers(questions)
+        const questionsWithAnswers = await generateAnswers(questions)
+
+        await autoFillFunction(url, questionsWithAnswers)
 
         const forms = await FORM.create({
-            form : questionsWithAnswers,
-            userId : '6825e638f191d7ff8c8dd72e'
+            url,
+            form: questionsWithAnswers,
+            userId: '6825e638f191d7ff8c8dd72e'
         })
 
 
-        return res.json({ success: true, questions: questionsWithAnswers});
+        return res.json({ success: true, questions: questionsWithAnswers });
     } catch (error) {
         console.error("Error while extracting questions:", error.message);
         return res.status(500).json({

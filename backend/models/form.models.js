@@ -2,6 +2,10 @@ import mongoose from "mongoose"
 
 
 const formSchema = new mongoose.Schema({
+    url : {
+        type : String,
+        required : true,
+    },
     form: [
         {
             question: {
