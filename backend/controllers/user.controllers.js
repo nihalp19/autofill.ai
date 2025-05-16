@@ -1,7 +1,7 @@
 import USER from "../models/user.models.js";
 import bcrypt from "bcrypt"
 import { z } from "zod"
-import { generateToken } from "../utils/generateToken.js";
+import { generateToken } from "../services/generateToken.js";
 import redis from "../utils/redis.js";
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"

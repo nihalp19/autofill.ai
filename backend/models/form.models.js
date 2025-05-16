@@ -5,23 +5,27 @@ const formSchema = new mongoose.Schema({
     form: [
         {
             question: {
-                type : String,
+                type: String,
             },
+            type: {
+                type: String,
+            },
+            options: [],
             answer: {
-                type : String
+                type: String
             }
         }
     ],
-    userId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "users",
-        required : true
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+        required: true
     }
 
-},{timestamps : true})
+}, { timestamps: true })
 
 
-const FORM = mongoose.model('forms',formSchema)
+const FORM = mongoose.model('forms', formSchema)
 
 export default FORM
 

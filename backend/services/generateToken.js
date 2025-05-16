@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import redis from "./redis.js"
+import redis from "../utils/redis.js"
 
 const setRefreshToken = (refreshToken, userId) => {
     redis.set(`refreshToken-${userId}`, refreshToken)
