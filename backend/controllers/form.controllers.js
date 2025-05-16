@@ -26,62 +26,92 @@ export const extractQuestions = async (req, res) => {
         await page.goto(url, { waitUntil: 'domcontentloaded' });
 
         const questions = await page.$$eval('div[role="listitem"]', items => {
+            // Helper to get the deepest non-empty text node in an element
+            function getDeepText(node) {
+                if (!node) return "";
+                if (node.childNodes.length === 0) return node.textContent.trim();
+                for (let child of node.childNodes) {
+                    const text = getDeepText(child);
+                    if (text) return text;
+                }
+                return "";
+            }
+
+            // Helper to extract option text from a radio/checkbox element
+            function extractOptionText(optionDiv) {
+                // Try ARIA label first (Google Forms sometimes uses this)
+                if (optionDiv.getAttribute('aria-label')) {
+                    return optionDiv.getAttribute('aria-label').trim();
+                }
+                // Try to find a visible span/div with text
+                let text = '';
+                const candidates = optionDiv.querySelectorAll('span, div, label');
+                for (const el of candidates) {
+                    const t = el.textContent.trim();
+                    if (t.length > 0) {
+                        text = t;
+                        break;
+                    }
+                }
+                // Fallback to deep text
+                if (!text) text = getDeepText(optionDiv);
+                return text;
+            }
+
             return items.map(item => {
                 const questionText = item.querySelector('div[role="heading"]')?.textContent?.trim() || 'Untitled Question';
                 let type = 'unknown';
                 let options = [];
 
-                if (item.querySelector('input[type="text"]')) {
-                    type = 'short_answer';
-                }
-
-                if (item.querySelector('textarea')) {
-                    type = 'paragraph';
-                }
-
-                if (item.querySelector('div[role="radio"]')) {
-                    type = 'multiple_choice';
-                    options = Array.from(item.querySelectorAll('div[role="radio"]')).map(opt => opt.textContent.trim());
-                }
-
-                if (item.querySelector('div[role="checkbox"]')) {
-                    type = 'checkboxes';
-                    options = Array.from(item.querySelectorAll('div[role="checkbox"]')).map(opt => opt.textContent.trim());
-                }
-
-                if (item.querySelector('div[role="listbox"]')) {
-                    type = 'dropdown';
-                    options = Array.from(item.querySelectorAll('[role="option"]')).map(opt => opt.textContent.trim());
-                }
-
-                if (item.querySelector('input[type="date"]') || item.innerHTML.includes('MM') || item.innerHTML.includes('YYYY')) {
-                    type = 'date';
-                }
-
-                if (item.querySelector('input[type="time"]') || item.innerHTML.includes('AM') || item.innerHTML.includes('PM')) {
-                    type = 'time';
-                }
-
-                const radios = item.querySelectorAll('div[role="radio"]');
-                const numericRadios = Array.from(radios).filter(r => /^\d+$/.test(r.textContent.trim()));
-                if (numericRadios.length >= 3 && item.innerHTML.includes('Least') || item.innerHTML.includes('Most')) {
-                    type = 'linear_scale';
-                    options = numericRadios.map(r => r.textContent.trim());
-                }
-
                 if (item.querySelector('table')) {
                     type = 'grid';
-                    options = []; // optional: parse rows/columns
+                }
+                else if (
+                    item.querySelectorAll('div[role="radio"]').length >= 3 &&
+                    (item.innerHTML.includes('Least') || item.innerHTML.includes('Most'))
+                ) {
+                    type = 'linear_scale';
+                    options = Array.from(item.querySelectorAll('div[role="radio"]')).map(extractOptionText).filter(Boolean);
+                }
+                else if (item.querySelector('div[role="radio"]')) {
+                    type = 'multiple_choice';
+                    options = Array.from(item.querySelectorAll('div[role="radio"]')).map(extractOptionText).filter(Boolean);
+                }
+                else if (item.querySelector('div[role="checkbox"]')) {
+                    type = 'checkboxes';
+                    options = Array.from(item.querySelectorAll('div[role="checkbox"]')).map(extractOptionText).filter(Boolean);
+                }
+                else if (item.querySelector('div[role="listbox"]')) {
+                    type = 'dropdown';
+                }
+                else if (item.querySelector('textarea')) {
+                    type = 'paragraph';
+                }
+                else if (item.querySelector('input[type="text"]') || item.querySelector('input[type="email"]')) {
+                    type = 'short_answer';
+                }
+                else if (
+                    item.querySelector('input[type="date"]') ||
+                    (item.innerHTML.includes('MM') && item.innerHTML.includes('YYYY'))
+                ) {
+                    type = 'date';
+                }
+                else if (
+                    item.querySelector('input[type="time"]') ||
+                    item.innerHTML.includes('AM') || item.innerHTML.includes('PM')
+                ) {
+                    type = 'time';
                 }
 
                 return {
                     question: questionText,
                     type,
                     options,
-                    answer: '', // placeholder
+                    answer: '', // placeholder for answer
                 };
             });
         });
+
 
         await browser.close();
         const questionsWithAnswers = await generateAnswers(questions)

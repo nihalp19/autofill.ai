@@ -51,12 +51,17 @@ export const autoFillFunction = async (url, questionsWithAnswers) => {
     const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
     // Fill out the form
-    for (const q of questionsWithAnswers) {
+    const questionDivs = await page.$$('div[role="listitem"]');
+
+    for (let i = 0; i < questionsWithAnswers.length; i++) {
+        const q = questionsWithAnswers[i];
         const { type, answer } = q;
+        const container = questionDivs[i];
+        if (!container) continue;
+
         try {
             if (type === 'short_answer') {
-                await page.waitForSelector('input[type="text"]', { timeout: 5000 });
-                const input = await page.$('input[type="text"]');
+                const input = await container.$('input[type="text"], input[type="email"]');
                 if (input) {
                     await input.click({ clickCount: 3 });
                     await input.type(answer, { delay: 50 });
@@ -64,8 +69,7 @@ export const autoFillFunction = async (url, questionsWithAnswers) => {
             }
 
             if (type === 'paragraph') {
-                await page.waitForSelector('textarea', { timeout: 5000 });
-                const textarea = await page.$('textarea');
+                const textarea = await container.$('textarea');
                 if (textarea) {
                     await textarea.click({ clickCount: 3 });
                     await textarea.type(answer, { delay: 50 });
@@ -73,32 +77,78 @@ export const autoFillFunction = async (url, questionsWithAnswers) => {
             }
 
             if (type === 'multiple_choice') {
-                await page.evaluate((ans) => {
-                    const radios = Array.from(document.querySelectorAll('div[role="radio"]'));
-                    const match = radios.find(r => r.textContent.trim() === ans);
+                await page.evaluate((idx, ans) => {
+                    function getLabelText(el) {
+                        // Prefer aria-label if present
+                        if (el.getAttribute('aria-label')) return el.getAttribute('aria-label').trim();
+                        // Otherwise, find deepest span/div with text
+                        const candidates = el.querySelectorAll('span, div, label');
+                        for (const c of candidates) {
+                            const t = c.textContent.trim();
+                            if (t.length > 0) return t;
+                        }
+                        return el.textContent.trim();
+                    }
+                    const containers = Array.from(document.querySelectorAll('div[role="listitem"]'));
+                    const radios = containers[idx].querySelectorAll('div[role="radio"]');
+                    const match = Array.from(radios).find(r => {
+                        const label = getLabelText(r).toLowerCase();
+                        return label === ans.toLowerCase() || label.includes(ans.toLowerCase()) || ans.toLowerCase().includes(label);
+                    });
                     if (match) match.click();
-                }, answer);
+                }, i, answer);
             }
 
             if (type === 'checkboxes') {
-                await page.evaluate((ans) => {
-                    const checkboxes = Array.from(document.querySelectorAll('div[role="checkbox"]'));
-                    checkboxes.forEach(c => {
-                        if (ans.includes(c.textContent.trim())) c.click();
+                await page.evaluate((idx, ans) => {
+                    function getLabelText(el) {
+                        if (el.getAttribute('aria-label')) return el.getAttribute('aria-label').trim();
+                        const candidates = el.querySelectorAll('span, div, label');
+                        for (const c of candidates) {
+                            const t = c.textContent.trim();
+                            if (t.length > 0) return t;
+                        }
+                        return el.textContent.trim();
+                    }
+                    const containers = Array.from(document.querySelectorAll('div[role="listitem"]'));
+                    const checkboxes = containers[idx].querySelectorAll('div[role="checkbox"]');
+                    Array.from(checkboxes).forEach(c => {
+                        const label = getLabelText(c).toLowerCase();
+                        if (Array.isArray(ans)) {
+                            if (ans.some(a => label === a.toLowerCase() || label.includes(a.toLowerCase()) || a.toLowerCase().includes(label))) {
+                                c.click();
+                            }
+                        } else {
+                            if (label === ans.toLowerCase() || label.includes(ans.toLowerCase()) || ans.toLowerCase().includes(label)) {
+                                c.click();
+                            }
+                        }
                     });
-                }, answer);
+                }, i, answer);
             }
 
             if (type === 'dropdown') {
-                await page.waitForSelector('[role="listbox"]', { timeout: 5000 });
-                await page.click('[role="listbox"]');
-                await page.waitForSelector('[role="option"]', { timeout: 5000 });
-                // Use XPath for exact text matching
-                const [option] = await page.$x(`//div[@role="option"][contains(., "${answer}")]`);
-                if (option) await option.click();
+                const dropdown = await container.$('[role="listbox"]');
+                if (dropdown) {
+                    await dropdown.click();
+                    await page.waitForSelector('[role="option"]', { timeout: 5000 });
+                    // Find the option using case-insensitive, partial match
+                    const options = await page.$$('[role="option"]');
+                    for (const opt of options) {
+                        const text = await (await opt.getProperty('innerText')).jsonValue();
+                        if (
+                            text.trim().toLowerCase() === answer.toLowerCase() ||
+                            text.trim().toLowerCase().includes(answer.toLowerCase()) ||
+                            answer.toLowerCase().includes(text.trim().toLowerCase())
+                        ) {
+                            await opt.click();
+                            break;
+                        }
+                    }
+                }
             }
 
-            await delay(1000 + Math.random() * 1000); // Random delay between questions
+            await delay(1000 + Math.random() * 1000);
         } catch (err) {
             console.warn(`Error filling ${type} with answer ${answer}:`, err.message);
         }
