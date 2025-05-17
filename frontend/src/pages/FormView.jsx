@@ -58,17 +58,16 @@ const FormView = () => {
                   className="border-b border-gray-800 pb-6 last:border-0 last:pb-0"
                 >
                   <h3 className="text-white font-medium mb-2">{item.question}</h3>
-                  
+
                   {item.type === 'multiple_choice' ? (
                     <div className="space-y-2">
                       {item.options?.map((option, optIndex) => (
                         <div
                           key={optIndex}
-                          className={`flex items-center p-3 rounded-lg ${
-                            option === item.answer
+                          className={`flex items-center p-3 rounded-lg ${option === item.answer
                               ? 'bg-blue-500/20 border border-blue-500/30'
                               : 'bg-gray-800/50 border border-gray-700'
-                          }`}
+                            }`}
                         >
                           {option === item.answer && (
                             <CheckCircle className="h-5 w-5 text-blue-500 mr-2" />

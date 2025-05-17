@@ -47,7 +47,7 @@ const FormHistory = () => {
                       </div>
                     </div>
                     <Link
-                      to={`/form/${index}`}
+                      to={`../form/${index}`}
                       className="flex items-center text-blue-500 hover:text-blue-400 transition-colors"
                     >
                       View Form <ArrowRight className="h-4 w-4 ml-2" />
