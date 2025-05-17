@@ -146,20 +146,10 @@ export const autoFillFunction = async (url, questionsWithAnswers) => {
                         }
                     }
                 }
-            }
-
-            await delay(1000 + Math.random() * 1000);
+            } 0
         } catch (err) {
-            console.warn(`Error filling ${type} with answer ${answer}:`, err.message);
+            console.warn('Submit button not found or click failed:', err.message);
         }
-    }
 
-    try {
-        const [submitButton] = await page.$x('//span[contains(text(), "Submit")]/ancestor::div[@role="button"]');
-        if (submitButton) await submitButton.click();
-        console.log('Form submitted!');
-    } catch (err) {
-        console.warn('Submit button not found or click failed:', err.message);
     }
-
-};
+}

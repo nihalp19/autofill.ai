@@ -118,12 +118,15 @@ export const extractQuestions = async (req, res) => {
 
         await autoFillFunction(url, questionsWithAnswers)
 
-        const forms = await FORM.create({
-            url,
-            form: questionsWithAnswers,
-            userId: '6825e638f191d7ff8c8dd72e'
-        })
+        const isUrlFound = await FORM.findOne({ url: url })
 
+        if (!isUrlFound) {
+            const forms = await FORM.create({
+                url,
+                form: questionsWithAnswers,
+                userId: '6825e638f191d7ff8c8dd72e'
+            })
+        } 
 
         return res.json({ success: true, questions: questionsWithAnswers });
     } catch (error) {

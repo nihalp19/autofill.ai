@@ -81,7 +81,7 @@ export const login = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid credentails" })
         }
 
-        const { refreshToken, accessToken } = generateToken(user._id)
+        const { refreshToken, accessToken } = await generateToken(user._id)
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
@@ -117,14 +117,19 @@ export const logout = async (req, res) => {
 
         const refreshToken = req.cookies.refreshToken
 
-        const redisRefreshToken = await redis.get(`refreshtoken-${req._id}`)
+        if (!refreshToken) {
+            return res.status(400).json({ success: false, message: "refreshToken is not provided" })
+        }
 
+        const decode = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY)
+
+        const redisRefreshToken = await redis.get(`refreshToken-${decode.userId}`)
 
         if (refreshToken !== redisRefreshToken) {
             return res.status(400).json({ success: false, message: "user is unauthorized" })
         }
 
-        await redis.del(`refreshtoken-${req._id}`)
+        await redis.del(`refreshToken-${decode.userId}`)
         res.clearCookie("refreshToken")
         res.clearCookie("accessToken")
         return res.status(200).json({ success: true, message: "logout successfully" })
@@ -142,20 +147,25 @@ export const checkAuth = async (req, res) => {
         if (!req.user) {
             return res.status(400).json({ success: false, message: "user is unauthtorized" })
         }
-        const refreshToken = req.cookie.refreshToken
+        const refreshToken = req.cookies.refreshToken
 
         const decode = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY)
 
         const redisRefreshToken = await redis.get(`refreshToken-${decode.userId}`)
 
         if (refreshToken !== redisRefreshToken) {
-            return res.status(400).json({ success: false, message: "user is unauthorized" })
+            return res.status(400).json({ success: false, message: "user is unauthorized", })
         }
 
         const accessToken = jwt.sign({ userId: decode.userId }, process.env.ACCESS_SECRET_KEY)
 
-        res.setCookie("accessToken", accessToken)
-        return res.status(200).json({ success: true, message: "user is authorized" })
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // send cookie only over HTTPS in production
+            sameSite: "strict",
+            maxAge: 1000 * 60 * 15, // 15 minutes
+        })
+        return res.status(200).json({ success: true, message: "user is authorized", user: req.user })
     } catch (error) {
         console.log("error while checkingAuth", error.message)
         return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message })

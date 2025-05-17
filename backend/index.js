@@ -8,19 +8,19 @@ import urlRoutes from "./router/form.routes.js"
 
 dotenv.config()
 
-const PORT = process.env.PORT || PORT
+const PORT = process.env.PORT || 5000
 const app = express()
 
 app.use(cors({
-    origin: ["http://localhost:5173/"],
+    origin: ["http://localhost:5173"],
     methods: ["GET", "PUT", "POST", "DELETE", "PATCH"],
-    allowedHeaders: true,
+    credentials: true
 }))
 
 app.use(express.json())
 app.use(cookieParser())
-app.use("/api/auth",userRoutes)
-app.use("/api/url",urlRoutes)
+app.use("/api/auth", userRoutes)
+app.use("/api/url", urlRoutes)
 
 app.all("/", (req, res) => {
     res.send("BACKEND IS RUNNING")
