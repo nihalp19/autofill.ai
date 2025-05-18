@@ -48,7 +48,7 @@ const Header = () => {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-                        {['Features', 'How It Works', 'Use Cases', 'Pricing'].map((item) => (
+                        {['Docs','Features', 'How It Works', 'Use Cases'].map((item) => (
                             <motion.a
                                 key={item}
                                 href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
