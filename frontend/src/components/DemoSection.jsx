@@ -19,8 +19,8 @@ const DemoSection = () => {
   };
   
   const formFields = [
-    { icon: User, label: "Full Name", placeholder: "Enter your full name", filledValue: "Nihal Pandey" },
-    { icon: Mail, label: "Email Address", placeholder: "Enter your email", filledValue: "nihal.pandey@example.com" },
+    { icon: User, label: "Full Name", placeholder: "Enter your full name", filledValue: "Nihal Panday" },
+    { icon: Mail, label: "Email Address", placeholder: "Enter your email", filledValue: "nihalpanday@gmail.com" },
     { icon: Phone, label: "Phone Number", placeholder: "Enter your phone number", filledValue: "+1 (555) 123-4567" },
     { icon: MapPin, label: "Address", placeholder: "Enter your address", filledValue: "123 Innovation Drive, Tech City, CA 94123" },
     { icon: Briefcase, label: "Current Occupation", placeholder: "What do you do?", filledValue: "Software Developer" },
@@ -69,7 +69,7 @@ const DemoSection = () => {
           transition={{ duration: 0.6 }}
         >
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-xl text-white font-semibold">Personal Information Form</h3>
+            <h3 className="text-xl text-white font-semibold mr-2">Personal Information Form</h3>
             
             <div className="flex space-x-3">
               <motion.button
