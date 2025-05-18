@@ -1,8 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Zap, ShieldCheck, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CTASection = () => {
+
+  const navigate = useNavigate()
+
+  const handleLogin = () => {
+    navigate("/login")
+  }
+
   return (
     <section className="relative bg-black py-20 sm:py-32">
       {/* Gradient background with animated effect */}
@@ -48,7 +56,7 @@ const CTASection = () => {
                 className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-3 rounded-xl flex items-center justify-center shadow-lg transition-all hover:from-blue-700 hover:to-indigo-800"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-              >
+              onClick={handleLogin}>
                 <Zap className="h-5 w-5 mr-2" />
                 <span>Get Started Free</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
