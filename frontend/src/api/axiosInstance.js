@@ -1,7 +1,9 @@
 import axios from "axios"
 
 
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
 export const axiosInstance = axios.create({
-    baseURL : "http://localhost:5000/api",
-    withCredentials : true
+    baseURL: FRONTEND_URL,
+    withCredentials: true
 })
