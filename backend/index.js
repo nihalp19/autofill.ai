@@ -11,8 +11,11 @@ dotenv.config()
 const PORT = process.env.PORT || 5000
 const app = express()
 
+
+console.log(process.env.FRONTEND_URL)
+
 app.use(cors({
-    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "PUT", "POST", "DELETE", "PATCH"],
     credentials: true
 }))
