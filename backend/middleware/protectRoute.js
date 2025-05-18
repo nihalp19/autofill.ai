@@ -12,7 +12,7 @@ export const protectRoute = async (req, res, next) => {
         const refreshToken = req.cookies.refreshToken
 
         if (!accessToken || !refreshToken) {
-            return res.status(400).json({ success: false, message: "token is required" })
+            return res.status(400).json({ success: false, message: "token expired" })
         }
 
         const decodeAccess = jwt.verify(accessToken, process.env.ACCESS_SECRET_KEY)

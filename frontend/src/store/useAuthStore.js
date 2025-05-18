@@ -8,7 +8,7 @@ export const useAuthStore = create((set, get) => ({
     isLoading: true,
     isSideBarOpen: false,
 
-    toogleSideBar: () => set(state => ({isSideBarOpen: !state.isSideBarOpen})),
+    toogleSideBar: () => set(state => ({ isSideBarOpen: !state.isSideBarOpen })),
 
 
     signup: async (data) => {
@@ -41,7 +41,7 @@ export const useAuthStore = create((set, get) => ({
         }
     },
 
-    logout : async() => {
+    logout: async () => {
         try {
             const res = await axiosInstance.post("/auth/logout")
             console.log("Logout Successfully")

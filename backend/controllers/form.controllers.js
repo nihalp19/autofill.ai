@@ -128,7 +128,7 @@ export const extractQuestions = async (req, res) => {
             })
         } 
 
-        return res.json({ success: true, questions: questionsWithAnswers });
+        return res.json({ success: true, message : "Form Filled SuccessFully",questions: questionsWithAnswers });
     } catch (error) {
         console.error("Error while extracting questions:", error.message);
         return res.status(500).json({

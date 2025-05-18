@@ -5,7 +5,7 @@ import { extractQuestions } from "../controllers/form.controllers.js"
 const router = express.Router()
 
 
-router.post("/generateAnswers",extractQuestions)
+router.post("/generateAnswers",protectRoute, extractQuestions)
 
 
 
