@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link, ArrowRight, Search, Database, Sparkles, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const steps = [
   {
@@ -30,6 +31,13 @@ const steps = [
 ];
 
 const HowItWorks = () => {
+
+  const navigate = useNavigate()
+
+  const handleLogin = () => {
+    navigate("/login")
+  }
+
   return (
     <section id="how-it-works" className="relative bg-black py-20 sm:py-32">
       {/* Gradient background */}
@@ -100,7 +108,7 @@ const HowItWorks = () => {
             className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-4 rounded-xl flex items-center justify-center transition-all hover:from-blue-700 hover:to-indigo-800 mx-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-          >
+           onClick={handleLogin}>
             <Zap className="h-5 w-5 mr-2" />
             <span>Try it now</span>
             <ArrowRight className="h-4 w-4 ml-2" />
