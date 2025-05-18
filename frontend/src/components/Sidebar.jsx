@@ -1,131 +1,164 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-    ChevronLeft,
-    ChevronRight,
-    LayoutDashboard,
-    History,
-    User,
-    LogOut,
-    ShieldCheck
+  Home,
+  FileText,
+  Settings,
+  Users,
+  History,
+  LogOut,
+  X,
+  User,
+  ShieldCheck
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
-    const location = useLocation();
-    const [activeItem, setActiveItem] = useState('Dashboard');
-    const { isSideBarOpen, toogleSideBar, logout } = useAuthStore();
+  const { isSideBarOpen, toogleSideBar, user ,logout} = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const navItems = [
-        { name: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/home/dashboard' },
-        { name: 'History', icon: <History size={20} />, path: '/home/history' },
-        { name: 'Profile', icon: <User size={20} />, path: '/home/profile' },
-    ];
+  // Define navigation items and their routes
+  const mainNavItems = [
+    { name: 'Dashboard', icon: <Home className="w-5 h-5" />, to: '/home/dashboard' },
+    { name: 'Docs', icon: <FileText className="w-5 h-5" />, to: '/docs' },
+    { name: 'History', icon: <History className="w-5 h-5" />, to: '/home/history' },
+    { name: 'Profile', icon: <Users className="w-5 h-5" />, to: '/home/profile' },
+  ];
 
-    const sidebarVariants = {
-        open: { width: '240px', transition: { duration: 0.3, ease: 'easeInOut' } },
-        closed: { width: '72px', transition: { duration: 0.3, ease: 'easeInOut' } }
-    };
+  const bottomNavItems = [
+    { name: 'Logout', icon: <LogOut className="w-5 h-5" />, action: async() => {
+      await logout()
+      window.location.href = '/';
+    }},
+  ];
 
-    const textVariants = {
-        open: { opacity: 1, x: 0, display: 'block', transition: { delay: 0.1, duration: 0.2 } },
-        closed: { opacity: 0, x: -10, transitionEnd: { display: 'none' }, transition: { duration: 0.2 } }
-    };
+  // NavItem as a regular functional component
+  const NavItem = ({ name, icon, to, active, onClick }) => (
+    <motion.li
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className={`group flex items-center gap-x-3 rounded-lg px-3 py-2 my-1 text-sm font-medium cursor-pointer ${
+        active
+          ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-white'
+          : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+      }`}
+      onClick={onClick}
+    >
+      <div className={`${active ? 'text-blue-500' : 'text-gray-400 group-hover:text-white'}`}>
+        {icon}
+      </div>
+      <span>{name}</span>
+      {active && (
+        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+      )}
+    </motion.li>
+  );
 
-    const logoTextVariants = {
-        open: { opacity: 1, width: 'auto', transition: { delay: 0.1, duration: 0.2 } },
-        closed: { opacity: 0, width: 0, transition: { duration: 0.2 } }
-    };
+  // Backdrop for mobile
+  const Backdrop = () => (
+    <motion.div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={toogleSideBar}
+    />
+  );
 
-    const handleLogout = async () => {
-        await logout();
-    };
-
-    return (
-        <motion.div
-            className="fixed left-0 top-0 bottom-0 z-40 h-screen
-        bg-gradient-to-br from-black via-gray-900 to-black
-        bg-opacity-80 backdrop-blur-md shadow-lg"
-            variants={sidebarVariants}
+  return (
+    <AnimatePresence>
+      {isSideBarOpen && (
+        <>
+          <Backdrop />
+          <motion.aside
+            className="fixed inset-y-0 left-0 w-64 bg-gray-900/95 backdrop-blur-md border-r border-gray-800 pt-5 pb-4 flex flex-col z-[60] lg:translate-x-0"
             initial="closed"
-            animate={isSideBarOpen ? 'open' : 'closed'}
-        >
-            <div className="flex flex-col  h-full">
-                {/* Logo and Toggle Button */}
-                <div className="flex items-center h-16 px-4 border-b border-gray-800">
-                    {isSideBarOpen ? (
-                        <div className="flex items-center flex-1 overflow-hidden">
-                            <ShieldCheck className="h-8 w-8 text-blue-500 flex-shrink-0" />
-                            {isSideBarOpen && (
-                                <motion.span
-                                    className="text-white font-bold ml-2 whitespace-nowrap"
-                                    variants={logoTextVariants}
-                                >
-                                    Autofill.AI
-                                </motion.span>
-                            )}
-                        </div>
-                    ) : <></>}
-
-                    <button
-                        className="p-1.5 rounded-lg hover:bg-gray-800 transition-colors"
-                        onClick={toogleSideBar}
-                    >
-                        {isSideBarOpen ?
-                            <ChevronLeft size={20} className="text-gray-400" /> :
-                            <ChevronRight size={20} className="text-gray-400" />
-                        }
-                    </button>
-                </div>
-
-                {/* Navigation Items */}
-                <div className="flex-1 overflow-y-auto py-4">
-                    <nav className="px-2 space-y-1">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.name}
-                                to={item.path}
-                                className={`flex items-center px-3 py-3 rounded-lg transition-all
-                                    ${location.pathname === item.path
-                                        ? 'bg-blue-600/20 text-blue-400'
-                                        : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                                    }`}
-                                onClick={() => setActiveItem(item.name)}
-                            >
-                                <div className="flex-shrink-0">{item.icon}</div>
-                                {isSideBarOpen && (
-                                    <motion.span
-                                        className="ml-3 font-medium"
-                                        variants={textVariants}
-                                    >
-                                        {item.name}
-                                    </motion.span>
-                                )}
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
-
-                {/* Logout Button */}
-                <div className="p-4 border-t border-gray-800" onClick={handleLogout}>
-                    <button
-                        className="flex items-center px-3 py-3 rounded-lg w-full text-red-400 hover:bg-white/10 hover:text-red-500 transition-all"
-                    >
-                        <LogOut size={20} />
-                        {isSideBarOpen && (
-                            <motion.span
-                                className="ml-3 font-medium"
-                                variants={textVariants}
-                            >
-                                Logout
-                            </motion.span>
-                        )}
-                    </button>
-                </div>
+            animate="open"
+            exit="closed"
+            variants={{
+              open: { x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
+              closed: { x: "-100%", transition: { type: "spring", stiffness: 300, damping: 30 } }
+            }}
+          >
+            <div className="flex items-center justify-between px-4 mb-6">
+              <motion.div
+                className="flex items-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                onClick={() => {navigate('/home'); toogleSideBar(false);}}
+                style={{cursor: 'pointer'}}
+              >
+                <ShieldCheck className="h-8 w-8 text-blue-500 mr-2" />
+                <span className="text-white font-bold text-xl">Autofill.AI</span>
+              </motion.div>
+              <button
+                className="p-1 rounded text-gray-400 hover:text-white hover:bg-gray-800 lg:hidden"
+                onClick={toogleSideBar}
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-        </motion.div>
-    );
+
+            <div className="flex-1 flex flex-col justify-between overflow-y-auto">
+              <div>
+                <div className="px-3 pt-1 mb-3">
+                  <div className="flex items-center p-2 rounded-lg bg-gray-800/50 gap-3">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      className="flex-shrink-0"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                    </motion.div>
+                    <div className="truncate">
+                      <p className="text-sm font-medium text-white">{user?.name || 'Alex Johnson'}</p>
+                      <p className="text-xs text-gray-400">{user?.email || 'alex@example.com'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-3">
+                  <nav className="space-y-1">
+                    <motion.ul className="space-y-2">
+                      {mainNavItems.map((item) => (
+                        <NavItem
+                          key={item.name}
+                          name={item.name}
+                          icon={item.icon}
+                          to={item.to}
+                          active={item.to && location.pathname.startsWith(item.to)}
+                          onClick={() => {
+                            navigate(item.to);
+                            toogleSideBar(false);
+                          }}
+                        />
+                      ))}
+                    </motion.ul>
+                  </nav>
+                </div>
+              </div>
+
+              <div className="px-3 pt-4 border-t border-gray-800 mt-5">
+                <motion.ul className="space-y-2">
+                  {bottomNavItems.map((item) => (
+                    <NavItem
+                      key={item.name}
+                      name={item.name}
+                      icon={item.icon}
+                      onClick={item.action}
+                    />
+                  ))}
+                </motion.ul>
+              </div>
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  );
 };
 
 export default Sidebar;
