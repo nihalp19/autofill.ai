@@ -7,8 +7,7 @@ import Login from "./pages/Login";
 import FormHistory from "./pages/FormHistory";
 import MainHero from "./components/MainHero";
 import Profile from "./pages/Profile";
-import Footer from "./components/Footer"
-import Sidebar from "./components/Sidebar";
+import Docs from "./pages/Docs";
 import MainLandingPage from "./pages/MainLandingPage";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
@@ -32,11 +31,12 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/home" />} />
           <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/home" />} />
+          <Route path="/docs" element={<Docs/>} />
 
           <Route path="/home" element={user ? <MainLandingPage /> : <Navigate to="/login" />}>
             <Route index element={<MainHero />} />
             <Route path="history" element={<FormHistory />} />
-            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} /> 
             <Route path="profile" element={<Profile />} />
             <Route path="form/:id" element={<FormView />} />
           </Route>
