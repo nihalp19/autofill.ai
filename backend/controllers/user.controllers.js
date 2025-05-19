@@ -86,13 +86,13 @@ export const login = async (req, res) => {
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production", // send cookie only over HTTPS in production
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 1000 * 60 * 15, // 15 minutes
         })
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         })
 
@@ -162,7 +162,7 @@ export const checkAuth = async (req, res) => {
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production", // send cookie only over HTTPS in production
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 1000 * 60 * 15, // 15 minutes
         })
         return res.status(200).json({ success: true, message: "user is authorized", user: req.user })
